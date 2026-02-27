@@ -1,7 +1,7 @@
 # Codez Editor
 
 A lightweight and intuitive code editor built with Python using CustomTkinter and Tkinter. Codez Editor provides a modern dark-themed interface with essential file management and editing capabilities.
-
+[Image](https://github.com/MrRealmWLS/Codez-Editor/blob/9fa5ad56df48e17f581b7124a23c402f68f80c2a/image.png)
 ## Features
 
 - Dark theme interface with purple accent colors
