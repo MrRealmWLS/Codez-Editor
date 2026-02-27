@@ -14,6 +14,14 @@ TEXT = "#f0f0f0"
 MUTED = "#6f6e6a"
 ACCENT = "#9d4edd"
 HOVER = "#b57ae0"
+SYNTAX = {
+    "keyword":  ("#c678dd", r"\b(def|class|return|import|from|if|else|elif|for|while|in|not|and|or|True|False|None|try|except|with|as|pass|break|continue|lambda|yield|global|nonlocal|raise|del|assert)\b"),
+    "builtin":  ("#61afef", r"\b(print|len|range|type|int|str|float|list|dict|set|tuple|open|super|self|cls|input|enumerate|zip|map|filter|hasattr|getattr|setattr)\b"),
+    "string":   ("#98c379", r"(\"\"\"[\s\S]*?\"\"\"|\'\'\'[\s\S]*?\'\'\'|\"[^\"\\n]*\"|\'[^\'\\n]*\')"),
+    "comment":  ("#5c6370", r"#[^\n]*"),
+    "number":   ("#d19a66", r"\b\d+(\.\d+)?\b"),
+    "decorator":("#e5c07b", r"@\w+"),
+}
 
 WORKSPACE = os.getcwd()
 
@@ -212,7 +220,17 @@ style.map("TNotebook.Tab",
 
 notebook.pack(side="right", fill="both", expand=True)
 tabs = {}
+def highlight(t_widget):
+    content = t_widget.get("1.0", "end")
+    for tag in SYNTAX:
+        t_widget.tag_remove(tag, "1.0", "end")
 
+    for tag, (color, pattern) in SYNTAX.items():
+        t_widget.tag_configure(tag, foreground=color)
+        for match in re.finditer(pattern, content):
+            start = f"1.0+{match.start()}c"
+            end   = f"1.0+{match.end()}c"
+            t_widget.tag_add(tag, start, end)
 def create_editor(parent, path):
     frame = tk.Frame(parent, bg=BG)
 
@@ -231,7 +249,13 @@ def create_editor(parent, path):
 
     with open(path, "r", encoding="utf-8", errors="replace") as f:
         text.insert("1.0", f.read())
-
+    highlight(text)
+    _after_id = {"id": None}
+    def on_change(event=None):
+        if _after_id["id"]:
+            text.after_cancel(_after_id["id"])
+        _after_id["id"] = text.after(200, lambda: highlight(text)) 
+    text.bind("<KeyRelease>", on_change)
     return frame
 
 def open_tab(path):
